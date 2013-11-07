@@ -1,4 +1,4 @@
-﻿namespace MsTestListWriter
+﻿namespace Shikahama
 {
     using System;
     using System.Collections.Generic;
