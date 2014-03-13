@@ -37,7 +37,7 @@ Command line arguments
 Example
 ------- 
 
-Input file  :data.coverage  
+Input file  :Libs.Test.dll  
 Output file :data.xml   
 File type   :XML  
 
