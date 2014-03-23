@@ -8,6 +8,7 @@
     using System.Linq;
     using System.Text;
     using System.Reflection;
+    using System.Xml.Serialization;
 
     class Program
     {
@@ -65,11 +66,12 @@
                 }
 
                 IList<AttributeInfoData> data = AttributeUtil.GetAttributeInfoData(inputPaths, new Type[] { typeof(TestClassAttribute) });
+                IList<MsTestData> testData = ConvertMsTestData(data);
 
                 if (isFileTypeXml)
-                    WriteXmlFile(outputPath, data);
+                    WriteXmlFile(outputPath, testData);
                 else
-                    WriteCsvFile(outputPath, data);
+                    WriteCsvFile(outputPath, testData);
 
                 result = true;
 
@@ -175,12 +177,37 @@
             }
         }
 
+        private static IList<MsTestData> ConvertMsTestData(IList<AttributeInfoData> source)
+        {
+            IList<MsTestData> results = new List<MsTestData>();
+
+            foreach (AttributeInfoData info in source)
+            {
+                MsTestData data = new MsTestData();
+                IList<string> categories = new List<string>();
+
+                foreach (Attribute attr in info.Attributes)
+                {
+                    if (attr is DescriptionAttribute)
+                        data.Description = ((DescriptionAttribute)attr).Description;
+                }
+
+                data.TypeName   = info.Class.FullName;
+                data.MethodName = info.Method.Name;
+                data.Categories = categories.ToArray();
+
+                results.Add(data);
+            }
+
+            return results;
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="outputPath"></param>
         /// <param name="data"></param>
-        private static void WriteCsvFile(string outputPath, IList<AttributeInfoData> data)
+        private static void WriteCsvFile(string outputPath, IList<MsTestData> data)
         {
         }
 
@@ -189,8 +216,14 @@
         /// </summary>
         /// <param name="outputPath"></param>
         /// <param name="data"></param>
-        private static void WriteXmlFile(string outputPath, IList<AttributeInfoData> data)
+        private static void WriteXmlFile(string outputPath, IList<MsTestData> data)
         {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<MsTestData>));
+
+            using (FileStream fs = new FileStream(outputPath, FileMode.Create))
+            {
+                serializer.Serialize(fs, data);
+            }
         }
     }
 }
